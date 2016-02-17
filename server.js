@@ -31,8 +31,14 @@ app.get("/", function(req, res){
   res.render("forms");
 });
 
-app.post("/", function(req, res){
+app.post("/register", function(req, res){
+  debugger;
+  console.log(req.body);
+});
 
+app.post("/login", function(req, res){
+  debugger;
+  console.log(req.body);
 });
 
 app.listen(PORT, function(){
