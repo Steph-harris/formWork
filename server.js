@@ -7,6 +7,20 @@ var mysql = require("mysql");
 var Sequelize = require("sequelize");
 var sequelize = new Sequelize('users', 'root');
 
+var User = sequelize.define('user', {
+  firstname: Sequelize.STRING, 
+  lastname: Sequelize.STRING,
+  email: {
+    type: Sequelize.STRING,
+    unique: true,
+    allowNull: false
+  },
+  password: {
+    type: Sequelize.STRING,
+    allowNull: false
+  }
+});
+
 var app = express();
 
 app.use(express.static(process.cwd() + '/public'));
@@ -28,19 +42,36 @@ app.engine("handlebars", exphbs({defaultLayout: "main"}));
 app.set("view engine", "handlebars");
 
 app.get("/", function(req, res){
-  res.render("forms");
+  res.render("forms", {
+    msg: req.query.msg
+  });
+});
+
+app.get("/success", function(req, res){
+  res.render("success", {
+    msg: req.query.msg
+  });
 });
 
 app.post("/register", function(req, res){
-  debugger;
-  console.log(req.body);
+  if(req.body.password !== "" && req.body.email !== ""){
+    User.create(req.body).then(function(user){
+      req.session.authenticated = user;
+      res.redirect('/success');
+    }).catch(function(err){
+      res.redirect("/?msg=" + err.message);
+    });
+  } else {
+    res.redirect("/?msg=Please fill in all fields");
+  }
 });
 
 app.post("/login", function(req, res){
-  debugger;
   console.log(req.body);
 });
 
-app.listen(PORT, function(){
-  console.log("Listening on port %s", PORT);
+sequelize.sync().then(function(){
+  app.listen(PORT, function(){
+    console.log("Listening on port %s", PORT);
+  });
 });
